@@ -50,7 +50,7 @@ def ninegag_parse(update: Update, context: CallbackContext, url: str):
 
 
 dart_path = os.path.join('.', 'yt_download', 'bin', 'yt_download.dart')
-clipDuration = '00:01:00'
+clipDuration = '00:05:00'
 
 
 def youtube_parse(update: Update, context: CallbackContext, url: str):
@@ -68,12 +68,13 @@ def youtube_parse(update: Update, context: CallbackContext, url: str):
                             shell=True
                             )
     videoFile = result.stdout
+    starttime = 0
     if 't=' in url:
         starttime = url.split('t=')[1]
-        starttime = str(datetime.timedelta(seconds=int(starttime)))
-        resultFile = '%s_cut.mp4' % videoFile
-        cut_video(videoFile, starttime, clipDuration, resultFile)
-        videoFile = resultFile
+    starttime = str(datetime.timedelta(seconds=int(starttime)))
+    resultFile = '%s_cut.mp4' % videoFile
+    cut_video(videoFile, starttime, clipDuration, resultFile)
+    videoFile = resultFile
     with open(videoFile, 'rb') as file:
         success_video(update, context, file.read(), url)
 
