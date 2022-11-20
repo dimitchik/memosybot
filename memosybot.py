@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from telegram import Update, Bot, ParseMode
+from telegram import Update, Bot, ParseMode, Chat
 from telegram.ext import MessageHandler, Filters, CallbackContext, Updater
 from telegram.error import BadRequest, NetworkError
 import logging
@@ -24,8 +24,9 @@ def success_video(update: Update, context: CallbackContext, video: str | bytes, 
     if update.effective_chat is not None:
         message = context.bot.send_video(
             chat_id=update.effective_chat.id, video=video)
-        context.bot.edit_message_caption(
-            chat_id=update.effective_chat.id, message_id=message.message_id, caption='<a href="tg://user?id=%s">%s</a>\n<a href="%s">%s</a>' % (update.message.from_user.id, update.message.from_user.full_name, url, url), parse_mode=ParseMode.HTML)
+        if update.effective_chat.type != Chat.PRIVATE:
+            context.bot.edit_message_caption(
+                chat_id=update.effective_chat.id, message_id=message.message_id, caption='<a href="tg://user?id=%s">%s</a>\n<a href="%s">%s</a>' % (update.message.from_user.id, update.message.from_user.full_name, url, url), parse_mode=ParseMode.HTML)
     else:
         context.bot.send_message(
             chat_id=dima_chat_id, text="WTF: %s\n%s\n%s" % (url_parse, update, context))
