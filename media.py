@@ -16,3 +16,8 @@ def loop_video(video: str, audio: str, result: str):
 def loop_audio(video: str, audio: str, result: str):
     subprocess.run(['ffmpeg', '-i', video, '-stream_loop', '-1', '-i', audio, '-shortest',
                    '-map', '0:v:0', '-map', '1:a:0', '-y', """%s""" % result], encoding='utf-8-sig')
+
+
+def cut_video(video: str, start: str, end: str, result: str):
+    subprocess.run(['ffmpeg', '-i', video, '-ss', start,
+                   '-t', end, '-async', '1', '-y', result], encoding='utf-8-sig')

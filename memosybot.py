@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
-from telegram import Update, Bot, ParseMode, Chat
+from telegram import Update, Bot, MessageEntity, Message
 from telegram.ext import MessageHandler, Filters, CallbackContext, Updater
 from telegram.error import BadRequest, NetworkError
 import logging
 import sys
-import parsers
+import video_parsers
 dima_chat_id = 293554686
 
 
@@ -13,37 +13,42 @@ def url_parse(update: Update, context: CallbackContext):
         for entity in update.message.entities:
             url = update.message.parse_entity(entity)
             if '9gag.com' in url and not url.endswith('.mp4'):
-                try_function(parsers.ninegag_parse, update, context, url,
-                             update=update, context=context)
+                try_function(video_parsers.ninegag_parse, update, context, url,
+                             update=update, context=context
+                             )
             if 'coub.com' in url or 'coub.ru' in url:
-                try_function(parsers.coub_parse, update, context, url,
-                             update=update, context=context)
+                try_function(video_parsers.coub_parse, update, context, url,
+                             update=update, context=context
+                             )
+            if 'youtu.be' in url or 'youtube.com' in url:
+                try_function(video_parsers.youtube_parse, update, context, url,
+                             update=update, context=context
+                             )
 
 
-def success_video(update: Update, context: CallbackContext, video: str | bytes, url: str):
+def error_message(*args, update: Update, context: CallbackContext):
     if update.effective_chat is not None:
-        message = context.bot.send_video(
-            chat_id=update.effective_chat.id, video=video)
-        if update.effective_chat.type != Chat.PRIVATE:
-            context.bot.edit_message_caption(
-                chat_id=update.effective_chat.id, message_id=message.message_id, caption='<a href="tg://user?id=%s">%s</a>\n<a href="%s">%s</a>' % (update.message.from_user.id, update.message.from_user.full_name, url, url), parse_mode=ParseMode.HTML)
-    else:
         context.bot.send_message(
-            chat_id=dima_chat_id, text="WTF: %s\n%s\n%s" % (url_parse, update, context))
-        context.bot.send_video(
-            chat_id=dima_chat_id, video=video, reply_to_message_id=update.message.message_id)
-
-
-def error_message(*args, update: Update | None, context: CallbackContext | None):
-    if update is not None and update.effective_chat is not None and context is not None:
-        context.bot.send_message(
-            chat_id=update.effective_chat.id, text="Сорян, сегодня не мой день ¯\\_(ツ)_/¯", reply_to_message_id=update.message.message_id)
+            chat_id=update.effective_chat.id,
+            text="Сорян, сегодня не мой день ¯\\_(ツ)_/¯",
+            reply_to_message_id=update.message.message_id
+        )
     bot = Bot(token)
     bot.send_message(
         chat_id=dima_chat_id, text="WTF: %s\n%s\n%s\n%s" % ((sys.exc_info()), update, context, args))
 
 
-def try_function(function, *args, update: Update | None, context: CallbackContext | None):
+def try_function(function, *args, update: Update, context: CallbackContext):
+    loadingMessageId = ''
+    if update.effective_chat is not None:
+        loadingMessage = context.bot.send_message(
+            chat_id=update.effective_chat.id,
+            text='🤔',
+            entities=[MessageEntity(type=MessageEntity.CUSTOM_EMOJI,
+                                    offset=0, length=2, custom_emoji_id='5465608036078852982')],
+            reply_to_message_id=update.message.message_id
+        )
+        loadingMessageId = loadingMessage.message_id
     x = 0
     while x < 10:
         try:
@@ -61,6 +66,9 @@ def try_function(function, *args, update: Update | None, context: CallbackContex
     else:
         error_message(
             *args, update=update, context=context)
+    if update.effective_chat is not None:
+        context.bot.delete_message(
+            chat_id=update.effective_chat.id, message_id=loadingMessageId)
 
 
 if __name__ == '__main__':
