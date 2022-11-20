@@ -62,11 +62,10 @@ def youtube_parse(update: Update, context: CallbackContext, url: str):
         if '?' in id:
             id.split('?')[0]
     print(dart_path)
-    result = subprocess.run(['dart', 'run', dart_path, id, ],
+    result = subprocess.run(['dart', 'run', dart_path, id],
                             encoding='utf-8-sig',
                             capture_output=True,
-                            text=True,
-                            shell=True
+                            text=True
                             )
     videoFile = result.stdout
     starttime = 0
