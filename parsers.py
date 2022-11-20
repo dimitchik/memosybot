@@ -18,20 +18,15 @@ def coub_parse(update: Update, context: CallbackContext, url: str):
         response.raise_for_status()
         params = response.json()
         videoUrl = params['file_versions']['mobile']['video']
-        print(videoUrl)
         videoFile = urllib.request.urlretrieve(
             videoUrl)[0]
         videoFile = os.path.abspath(videoFile)
-        print(videoFile)
         audioUrl = params['file_versions']['mobile']['audio'][0]
         audioFile = urllib.request.urlretrieve(
             audioUrl)[0]
         audioFile = os.path.abspath(audioFile)
-        print(audioFile)
         videoLength = get_length(videoFile)
-        print('video length: %s' % videoLength)
         audioLength = get_length(audioFile)
-        print('audio length: %s' % audioLength)
         result = '%s_merged.mp4' % videoUrl.split(
             '/')[-1].split('.')[0]
         result = os.path.abspath(result)
