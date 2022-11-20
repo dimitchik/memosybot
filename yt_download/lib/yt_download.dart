@@ -14,6 +14,7 @@ Future<String?> download(String id) async {
   final stream = yt.videos.streamsClient.get(streamInfo);
   final filePath = '$id.mp4';
   final file = File(filePath);
+  file.createSync();
   final fileStream = file.openWrite();
   await stream.pipe(fileStream);
   await fileStream.flush();
