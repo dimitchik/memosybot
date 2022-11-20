@@ -42,6 +42,8 @@ def coub_parse(update: Update, context: CallbackContext, url: str):
 
 def ninegag_parse(update: Update, context: CallbackContext, url: str):
     id = url.split('/')[-1]
+    if '?' in id:
+        id = id.split('?')[0]
     videoUrl = 'https://9gag.com/photo/%s_460sv.mp4' % (id)
     requests.get(videoUrl, headers=headers)
     success_video(update, context, videoUrl, url)
