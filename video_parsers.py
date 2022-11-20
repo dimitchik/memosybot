@@ -47,6 +47,7 @@ def ninegag_parse(update: Update, context: CallbackContext, url: str):
     success_video(update, context, videoUrl, url)
 
 
+dart_path = os.path.join('.', 'yt_download', 'bin', 'yt_download.dart')
 clipDuration = '00:01:00'
 
 
@@ -58,7 +59,7 @@ def youtube_parse(update: Update, context: CallbackContext, url: str):
         id = url.split('/')[-1]
         if '?' in id:
             id.split('?')[0]
-    result = subprocess.run(['dart', 'run', '.\\yt_download\\bin\\yt_download.dart', id, ],
+    result = subprocess.run(['dart', 'run', dart_path, id, ],
                             encoding='utf-8-sig',
                             capture_output=True,
                             text=True,
