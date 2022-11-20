@@ -85,10 +85,16 @@ def success_video(update: Update, context: CallbackContext, video: str | bytes, 
         if update.effective_chat.type != Chat.PRIVATE:
             context.bot.edit_message_caption(
                 chat_id=update.effective_chat.id, message_id=message.message_id,
-                caption='<a href="tg://user?id=%s">%s</a>\n<a href="%s">%s</a>' % (
-                    update.message.from_user.id, update.message.from_user.full_name, url, url),
+                caption='<a href="tg://user?id=%s">%s</a>\n%s' % (
+                    update.message.from_user.id, update.message.from_user.full_name,
+                    update.message.text
+                ),
                 parse_mode=ParseMode.HTML
             )
+            if update.message.parse_entity(update.message.entities[-1]) == url:
+                context.bot.delete_message(
+                    chat_id=update.effective_chat.id, message_id=update.message.message_id
+                )
     else:
         context.bot.send_message(
             chat_id=dima_chat_id, text="WTF: %s\n%s\n%s" % (url, update, context))
