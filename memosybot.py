@@ -5,7 +5,8 @@ from telegram.error import BadRequest, NetworkError
 import logging
 import sys
 import video_parsers
-dima_chat_id = 293554686
+import settings
+from os import path
 
 
 def url_parse(update: Update, context: CallbackContext):
@@ -33,9 +34,9 @@ def error_message(*args, update: Update, context: CallbackContext):
             text="Сорян, сегодня не мой день ¯\\_(ツ)_/¯",
             reply_to_message_id=update.message.message_id
         )
-    bot = Bot(token)
+    bot = Bot(settings.token)
     bot.send_message(
-        chat_id=dima_chat_id, text="WTF: %s\n%s\n%s\n%s" % ((sys.exc_info()), update, context, args))
+        chat_id=settings.debug_chat_id, text="WTF: %s\n%s\n%s\n%s" % ((sys.exc_info()), update, context, args))
 
 
 def try_function(function, *args, update: Update, context: CallbackContext):
@@ -74,11 +75,9 @@ def try_function(function, *args, update: Update, context: CallbackContext):
 if __name__ == '__main__':
     logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                         level=logging.INFO)
-    with open('token', 'r') as t:
-        global token
-        token = t.read()
+    settings.init()
     url_handler = MessageHandler(Filters.text & (~Filters.command), url_parse)
-    updater = Updater(token=token, use_context=True)
+    updater = Updater(token=settings.token, use_context=True)
     dispatcher = updater.dispatcher
     dispatcher.add_handler(url_handler)
     updater.start_polling()

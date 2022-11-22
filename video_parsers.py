@@ -6,7 +6,7 @@ import urllib.request
 import os
 import datetime
 from media import get_length, loop_video, loop_audio, cut_video
-from memosybot import dima_chat_id
+import settings
 
 headers = {
     'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36'}
@@ -97,6 +97,6 @@ def success_video(update: Update, context: CallbackContext, video: str | bytes, 
                 )
     else:
         context.bot.send_message(
-            chat_id=dima_chat_id, text="WTF: %s\n%s\n%s" % (url, update, context))
+            chat_id=settings.debug_chat_id, text="WTF: %s\n%s\n%s" % (url, update, context))
         context.bot.send_video(
-            chat_id=dima_chat_id, video=video, reply_to_message_id=update.message.message_id)
+            chat_id=settings.debug_chat_id, video=video, reply_to_message_id=update.message.message_id)
