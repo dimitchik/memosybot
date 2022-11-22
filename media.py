@@ -23,6 +23,11 @@ def cut_video(video: str, start: str, end: str, result: str):
                    '-t', end, '-async', '1', '-y', result], encoding='utf-8-sig')
 
 
-def download_stream(url: str, start: str, end: str, result: str):
-    subprocess.run(['ffmpeg', '-i', url, '-ss', start,
-                   '-t', end, '-c', 'copy', '-y', result], encoding='utf-8-sig')
+def download_stream_start_dur(url: str, start: str, dur: str, result: str):
+    subprocess.run(['ffmpeg', '-ss', start,  '-i', url,
+                   '-t', dur, '-c', 'copy', '-y', result], encoding='utf-8-sig')
+
+
+def download_stream(url: str, result: str):
+    subprocess.run(['ffmpeg', '-i', url, '-c', 'copy',
+                   '-y', result], encoding='utf-8-sig')

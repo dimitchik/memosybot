@@ -2,9 +2,9 @@
 
 Python packages:
 - python-telegram-bot
+- requests
 - pymediainfo
+- pytube
 
 System dependencies:
 - ffmpeg
-
-Requires file with bot token in root folder named 'token'

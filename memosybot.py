@@ -25,6 +25,9 @@ def url_parse(update: Update, context: CallbackContext):
                 try_function(video_parsers.youtube_parse, update, context, url,
                              update=update, context=context
                              )
+            if 'reddit.com' in url or 'v.redd.it' in url:
+                try_function(video_parsers.reddit_parse, update,
+                             context, url, update=update, context=context)
 
 
 def error_message(*args, update: Update, context: CallbackContext):
@@ -36,7 +39,7 @@ def error_message(*args, update: Update, context: CallbackContext):
         )
     bot = Bot(settings.token)
     bot.send_message(
-        chat_id=settings.debug_chat_id, text="WTF: %s\n%s\n%s\n%s" % ((sys.exc_info()), update, context, args))
+        chat_id=settings.debug_chat_id, text="WTF: %s\n%s\n%s\n%s" % (sys.exc_info(), update, context, args))
 
 
 def try_function(function, *args, update: Update, context: CallbackContext):
@@ -52,6 +55,7 @@ def try_function(function, *args, update: Update, context: CallbackContext):
         loadingMessageId = loadingMessage.message_id
     x = 0
     while x < 10:
+        print(x)
         try:
             function(*args)
         except BadRequest:
@@ -59,6 +63,7 @@ def try_function(function, *args, update: Update, context: CallbackContext):
             break
         except NetworkError:
             x += 1
+            print(sys.exc_info())
             continue
         except:
             error_message(

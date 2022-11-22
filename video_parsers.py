@@ -1,11 +1,9 @@
-import subprocess
 from telegram import Update, Chat, ParseMode
 from telegram.ext import CallbackContext
 import requests
 import urllib.request
 import os
-import datetime
-from media import get_length, loop_video, loop_audio, download_stream
+from media import get_length, loop_video, loop_audio, download_stream_start_dur, download_stream
 import settings
 from memosybot import error_message
 
@@ -70,10 +68,28 @@ def youtube_parse(update: Update, context: CallbackContext, url: str):
                       update=update, context=context)
         return
     streamurl = stream.url
-    videoFile = '%s.mp4' % id
-    endtime = str(datetime.timedelta(seconds=int(starttime)+300))
-    starttime = str(datetime.timedelta(seconds=int(starttime)))
-    download_stream(streamurl, starttime, endtime, videoFile)
+    videoFile = '%s.mp4' % youtubeObject.video_id
+    download_stream_start_dur(streamurl, starttime, '60', videoFile)
+    with open(videoFile, 'rb') as file:
+        success_video(update, context, file.read(), url)
+
+
+def reddit_parse(update: Update, context: CallbackContext, url: str):
+    videoUrl: str
+    if 'reddit.com' in url:
+        lastslash = url.rfind('/')
+        url = url[:lastslash]
+        response = requests.get('%s.json' % url, headers=headers)
+        response.raise_for_status()
+        data = response.json()
+        videoUrl = data[0]['data']['children'][0]['data']['secure_media']['reddit_video']['dash_url']
+    elif 'v.redd.it' in url:
+        videoUrl = '%s/DASHPlaylist.mpd' % url
+    else:
+        error_message(update=update, context=context)
+        return
+    videoFile = '%s.mp4' % url.split('/')[-1]
+    download_stream(videoUrl, videoFile)
     with open(videoFile, 'rb') as file:
         success_video(update, context, file.read(), url)
 
