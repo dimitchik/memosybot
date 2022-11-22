@@ -19,7 +19,7 @@ def init():
             token = input()
             settings = {}
             settings['token'] = token
-            print('Enter debug chat id (or user tag with @):')
+            print('Enter debug chat id:')
             debug_chat_id = input()
             settings['debug_chat_id'] = debug_chat_id
             data = json.dumps(settings)

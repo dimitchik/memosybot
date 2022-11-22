@@ -5,8 +5,9 @@ import requests
 import urllib.request
 import os
 import datetime
-from media import get_length, loop_video, loop_audio, cut_video
+from media import get_length, loop_video, loop_audio, download_stream
 import settings
+from memosybot import error_message
 
 headers = {
     'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36'}
@@ -54,26 +55,25 @@ clipDuration = '00:05:00'
 
 
 def youtube_parse(update: Update, context: CallbackContext, url: str):
-    id = url
-    if 'youtube.com' in url and 'watch?v=' in url:
-        id = url.split('watch?v=')[1].split('&')[0]
-    if 'youtu.be' in url or 'shorts' in url:
-        id = url.split('/')[-1]
-        if '?' in id:
-            id.split('?')[0]
-    result = subprocess.run(['dart', 'run', dart_path, id],
-                            encoding='utf-8-sig',
-                            capture_output=True,
-                            text=True
-                            )
-    videoFile = result.stdout
-    starttime = 0
+    import pytube
+    starttime = '0'
     if 't=' in url:
-        starttime = url.split('t=')[1]
+        starttime = url.split('t=')[1].split('&')[0]
+    youtubeObject = pytube.YouTube(url)
+    stream = youtubeObject.streams.get_by_resolution('360p')
+    if stream is None:
+        stream = youtubeObject.streams.get_by_resolution('240p')
+    if stream is None:
+        stream = youtubeObject.streams.get_by_resolution('144p')
+    if stream is None:
+        error_message('Could not find any resolution',
+                      update=update, context=context)
+        return
+    streamurl = stream.url
+    videoFile = '%s.mp4' % id
+    endtime = str(datetime.timedelta(seconds=int(starttime)+300))
     starttime = str(datetime.timedelta(seconds=int(starttime)))
-    resultFile = '%s_cut.mp4' % videoFile
-    cut_video(videoFile, starttime, clipDuration, resultFile)
-    videoFile = resultFile
+    download_stream(streamurl, starttime, endtime, videoFile)
     with open(videoFile, 'rb') as file:
         success_video(update, context, file.read(), url)
 

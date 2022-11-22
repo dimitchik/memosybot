@@ -21,3 +21,8 @@ def loop_audio(video: str, audio: str, result: str):
 def cut_video(video: str, start: str, end: str, result: str):
     subprocess.run(['ffmpeg', '-i', video, '-ss', start,
                    '-t', end, '-async', '1', '-y', result], encoding='utf-8-sig')
+
+
+def download_stream(url: str, start: str, end: str, result: str):
+    subprocess.run(['ffmpeg', '-i', url, '-ss', start,
+                   '-t', end, '-c', 'copy', '-y', result], encoding='utf-8-sig')
