@@ -76,7 +76,8 @@ if __name__ == '__main__':
     logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                         level=logging.INFO)
     settings.init()
-    url_handler = MessageHandler(Filters.text & (~Filters.command), url_parse)
+    url_handler = MessageHandler(Filters.text & (
+        ~Filters.command) & Filters.entity(MessageEntity.URL), url_parse)
     updater = Updater(token=settings.token, use_context=True)
     dispatcher = updater.dispatcher
     dispatcher.add_handler(url_handler)
