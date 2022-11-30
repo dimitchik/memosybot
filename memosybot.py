@@ -45,11 +45,17 @@ def error_message(*args, update: Update, context: CallbackContext):
 def try_function(function, *args, update: Update, context: CallbackContext):
     loadingMessageId = ''
     if update.effective_chat is not None:
-        loadingMessage = context.bot.send_message(
+
+        # loadingMessage = context.bot.send_message(
+        #     chat_id=update.effective_chat.id,
+        #     text='🤔',
+        #     entities=[MessageEntity(type=MessageEntity.CUSTOM_EMOJI,
+        #                             offset=0, length=2, custom_emoji_id='5465608036078852982')],
+        #     reply_to_message_id=update.message.message_id
+        # )
+        loadingMessage = context.bot.send_sticker(
             chat_id=update.effective_chat.id,
-            text='🤔',
-            entities=[MessageEntity(type=MessageEntity.CUSTOM_EMOJI,
-                                    offset=0, length=2, custom_emoji_id='5465608036078852982')],
+            sticker='CAACAgIAAxkBAAIBzGOHjfCGEPoiv6G2LCxCLUHjemF8AAJBAQACzRswCPHwYhjf9pZYKwQ',
             reply_to_message_id=update.message.message_id
         )
         loadingMessageId = loadingMessage.message_id
