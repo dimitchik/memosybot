@@ -22,11 +22,19 @@ def url_parse(update: Update, context: CallbackContext):
                              update=update, context=context
                              )
             if 'youtu.be' in url or 'youtube.com' in url:
-                try_function(video_parsers.youtube_parse, update, context, url,
-                             update=update, context=context
-                             )
+                if 'clip' in url:
+                    try_function(video_parsers.youtube_clip_parse, update,
+                                 context, url, update=update, context=context
+                                 )
+                else:
+                    try_function(video_parsers.youtube_parse, update, context, url,
+                                 update=update, context=context
+                                 )
             if 'reddit.com' in url or 'v.redd.it' in url:
                 try_function(video_parsers.reddit_parse, update,
+                             context, url, update=update, context=context)
+            if 'tiktok.com' in url:
+                try_function(video_parsers.tiktok_parse, update,
                              context, url, update=update, context=context)
 
 
@@ -43,22 +51,14 @@ def error_message(*args, update: Update, context: CallbackContext):
 
 
 def try_function(function, *args, update: Update, context: CallbackContext):
-    loadingMessageId = ''
+    loading_message_id = ''
     if update.effective_chat is not None:
-
-        # loadingMessage = context.bot.send_message(
-        #     chat_id=update.effective_chat.id,
-        #     text='🤔',
-        #     entities=[MessageEntity(type=MessageEntity.CUSTOM_EMOJI,
-        #                             offset=0, length=2, custom_emoji_id='5465608036078852982')],
-        #     reply_to_message_id=update.message.message_id
-        # )
-        loadingMessage = context.bot.send_sticker(
+        loading_message = context.bot.send_sticker(
             chat_id=update.effective_chat.id,
             sticker='CAACAgIAAxkBAAIBzGOHjfCGEPoiv6G2LCxCLUHjemF8AAJBAQACzRswCPHwYhjf9pZYKwQ',
             reply_to_message_id=update.message.message_id
         )
-        loadingMessageId = loadingMessage.message_id
+        loading_message_id = loading_message.message_id
     x = 0
     while x < 10:
         print(x)
@@ -80,7 +80,7 @@ def try_function(function, *args, update: Update, context: CallbackContext):
             *args, update=update, context=context)
     if update.effective_chat is not None:
         context.bot.delete_message(
-            chat_id=update.effective_chat.id, message_id=loadingMessageId)
+            chat_id=update.effective_chat.id, message_id=loading_message_id)
 
 
 if __name__ == '__main__':

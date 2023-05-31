@@ -52,12 +52,14 @@ dart_path = os.path.join('.', 'yt_download', 'bin', 'yt_download.dart')
 clipDuration = '00:05:00'
 
 
-def youtube_parse(update: Update, context: CallbackContext, url: str):
-    import pytube
+def youtube_parse(update: Update, context: CallbackContext, url: str, dur: str = '60', orig_url: str | None = None):
+    from pytube import YouTube
+    if orig_url is None:
+        orig_url = url
     starttime = '0'
     if 't=' in url:
         starttime = url.split('t=')[1].split('&')[0]
-    youtubeObject = pytube.YouTube(url)
+    youtubeObject = YouTube(url)
     stream = youtubeObject.streams.get_by_resolution('360p')
     if stream is None:
         stream = youtubeObject.streams.get_by_resolution('240p')
@@ -69,7 +71,74 @@ def youtube_parse(update: Update, context: CallbackContext, url: str):
         return
     streamurl = stream.url
     videoFile = '%s.mp4' % youtubeObject.video_id
-    download_stream_start_dur(streamurl, starttime, '60', videoFile)
+    print(streamurl)
+    download_stream_start_dur(streamurl, starttime, dur, videoFile)
+    with open(videoFile, 'rb') as file:
+        success_video(update, context, file.read(), orig_url)
+
+
+def youtube_clip_parse(update: Update, context: CallbackContext, url: str):
+    from bs4 import BeautifulSoup
+    response = requests.get(url, headers=headers)
+    soup = BeautifulSoup(response.text, 'html.parser')
+    video_url = soup.find('meta', property='og:video:url')
+    video_url = video_url.attrs['content']
+    video_id = video_url.split('/')[-1].split('?')[0]
+    video_url = 'https://www.youtube.com/watch?v=%s' % video_id
+    start_time = response.text.split(
+        '''"startTimeMs":"''')[-1].split('''"''')[0]
+    start_time = int(start_time) // 1000
+    end_time = response.text.split('''"endTimeMs":"''')[-1].split('''"''')[0]
+    end_time = int(end_time) // 1000
+    dur = end_time - start_time
+    if dur > 60:
+        dur = 60
+    dur = str(dur)
+    start_time = str(start_time)
+    video_url = '%s&t=%s' % (video_url, start_time)
+    youtube_parse(update, context, video_url, dur, url)
+
+
+def tiktok_parse(update: Update, context: CallbackContext, url: str):
+    import bs4
+    ses = requests.Session()
+    server_url = 'https://musicaldown.com/'
+    headers = {
+        "Host": "musicaldown.com",
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:103.0) Gecko/20100101 Firefox/103.0",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+        "Accept-Language": "en-US,en;q=0.5",
+        "DNT": "1",
+        "Upgrade-Insecure-Requests": "1",
+        "Sec-Fetch-Dest": "document",
+        "Sec-Fetch-Mode": "navigate",
+        "Sec-Fetch-Site": "none",
+        "Sec-Fetch-User": "?1",
+        "TE": "trailers"
+    }
+    ses.headers.update(headers)
+    req = ses.get(server_url)
+    data = {}
+    parse = bs4.BeautifulSoup(req.text, 'html.parser')
+    get_all_input = parse.findAll('input')
+    for i in get_all_input:
+        if i.get("id") == "link_url":
+            data[i.get("name")] = url
+        else:
+            data[i.get("name")] = i.get("value")
+    post_url = server_url + "id/download"
+    req_post = ses.post(post_url, data=data, allow_redirects=True)
+    if req_post.status_code == 302 or 'This video is currently not available' in req_post.text or 'Video is private or removed!' in req_post.text:
+        error_message('Video private or removed',
+                      update=update, context=context)
+    elif 'Submitted Url is Invalid, Try Again' in req_post.text:
+        error_message('Invalid url',
+                      update=update, context=context)
+    get_all_blank = bs4.BeautifulSoup(req_post.text, 'html.parser').findAll(
+        'a', attrs={'target': '_blank'})
+    download_link = get_all_blank[0].get('href')
+    videoFile = 'tiktok_%s.mp4' % url.split('/')[-1].split('?')[0]
+    download_stream(download_link, videoFile)
     with open(videoFile, 'rb') as file:
         success_video(update, context, file.read(), url)
 
