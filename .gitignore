@@ -3,3 +3,6 @@ token
 .vscode
 __pycache__
 settings.json
+vendored
+ffmpeg
+libmediainfo*

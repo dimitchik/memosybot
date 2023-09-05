@@ -1,3 +1,4 @@
+
 from telegram import Update, Chat, ParseMode
 from telegram.ext import CallbackContext
 import requests
@@ -78,17 +79,31 @@ def youtube_parse(update: Update, context: CallbackContext, url: str, dur: str =
 
 
 def youtube_clip_parse(update: Update, context: CallbackContext, url: str):
-    from bs4 import BeautifulSoup
+    from bs4 import BeautifulSoup, Tag, NavigableString
+    import re
     response = requests.get(url, headers=headers)
     soup = BeautifulSoup(response.text, 'html.parser')
     video_url = soup.find('meta', property='og:video:url')
-    video_url = video_url.attrs['content']
+    if isinstance(video_url, Tag):
+        video_url = video_url.attrs['content']
+    elif isinstance(video_url, NavigableString):
+        video_url = video_url[0].split('content="')[1].split('"')[0]
+    else:
+        video_url = url
     video_id = video_url.split('/')[-1].split('?')[0]
     video_url = 'https://www.youtube.com/watch?v=%s' % video_id
-    start_time = response.text.split(
-        '''"startTimeMs":"''')[-1].split('''"''')[0]
+    pattern = r"\"?startTimeMs\"? *: *\"(\d+)\""
+    matches = re.findall(pattern, response.text)
+    if len(matches) == 0:
+        with open('clip.log', 'x') as log:
+            log.write(response.text)
+        with open('matches.log', 'x') as log:
+            log.write(str(matches))
+    start_time = matches.pop()
     start_time = int(start_time) // 1000
-    end_time = response.text.split('''"endTimeMs":"''')[-1].split('''"''')[0]
+    pattern = r"\"?endTimeMs\"? *: *\"(\d+)\""
+    matches = re.findall(pattern, response.text)
+    end_time = matches.pop()
     end_time = int(end_time) // 1000
     dur = end_time - start_time
     if dur > 60:
@@ -185,3 +200,5 @@ def success_video(update: Update, context: CallbackContext, video: str | bytes, 
             chat_id=settings.debug_chat_id, text="WTF: %s\n%s\n%s" % (url, update, context))
         context.bot.send_video(
             chat_id=settings.debug_chat_id, video=video, reply_to_message_id=update.message.message_id)
+    if isinstance(video, str):
+        os.remove(video)
