@@ -1,8 +1,22 @@
-token
+# downloaded media
 *.mp4
+
+# vscode settings
 .vscode
+
+# python stuff
 __pycache__
-settings.json
 vendored
+
+# local settings
+settings.json
+
+# ffmpeg and mediainfo binaries
 ffmpeg
 libmediainfo*
+
+# logs
+*.log
+
+# IDK LOL
+.DS_Store

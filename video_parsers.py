@@ -94,11 +94,6 @@ def youtube_clip_parse(update: Update, context: CallbackContext, url: str):
     video_url = 'https://www.youtube.com/watch?v=%s' % video_id
     pattern = r"\"?startTimeMs\"? *: *\"(\d+)\""
     matches = re.findall(pattern, response.text)
-    if len(matches) == 0:
-        with open('clip.log', 'x') as log:
-            log.write(response.text)
-        with open('matches.log', 'x') as log:
-            log.write(str(matches))
     start_time = matches.pop()
     start_time = int(start_time) // 1000
     pattern = r"\"?endTimeMs\"? *: *\"(\d+)\""
@@ -200,5 +195,5 @@ def success_video(update: Update, context: CallbackContext, video: str | bytes, 
             chat_id=settings.debug_chat_id, text="WTF: %s\n%s\n%s" % (url, update, context))
         context.bot.send_video(
             chat_id=settings.debug_chat_id, video=video, reply_to_message_id=update.message.message_id)
-    if isinstance(video, str):
+    if isinstance(video, str) and os.path.exists(video) and not video.startswith('http'):
         os.remove(video)

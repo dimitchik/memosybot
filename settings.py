@@ -14,15 +14,13 @@ def init():
             token = settings['token']
             debug_chat_id = settings['debug_chat_id']
     else:
-        # with open(settings_file, 'x') as file:
-        #     print('First launch, enter bot token:')
-        #     token = input()
-        #     settings = {}
-        #     settings['token'] = token
-        #     print('Enter debug chat id:')
-        #     debug_chat_id = input()
-        #     settings['debug_chat_id'] = debug_chat_id
-        #     data = json.dumps(settings)
-        #     file.write(data)
-        token = environ['TOKEN']
-        debug_chat_id = environ['DEBUG_CHAT_ID']
+        with open(settings_file, 'x') as file:
+            print('First launch, enter bot token:')
+            token = input()
+            settings = {}
+            settings['token'] = token
+            print('Enter debug chat id:')
+            debug_chat_id = input()
+            settings['debug_chat_id'] = debug_chat_id
+            data = json.dumps(settings)
+            file.write(data)

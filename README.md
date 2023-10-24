@@ -8,3 +8,4 @@ Python packages:
 
 System dependencies:
 - ffmpeg
+- Needs libmediainfo.dylib on Mac and possibly some other systems

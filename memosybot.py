@@ -74,14 +74,13 @@ def error_message(*args, update: Update | None = None, context: CallbackContext 
 
 
 def try_function(function, *args, update: Update, context: CallbackContext):
-    loading_message_id = ''
+    loading_message = None
     if update.effective_chat is not None:
         loading_message = context.bot.send_sticker(
             chat_id=update.effective_chat.id,
             sticker='CAACAgIAAxkBAAIBzGOHjfCGEPoiv6G2LCxCLUHjemF8AAJBAQACzRswCPHwYhjf9pZYKwQ',
             disable_notification=True,
         )
-        loading_message_id = loading_message.message_id
     x = 0
     while x < 10:
         print(x)
@@ -101,9 +100,8 @@ def try_function(function, *args, update: Update, context: CallbackContext):
     else:
         error_message(
             *args, update=update, context=context)
-    if update.effective_chat is not None:
-        context.bot.delete_message(
-            chat_id=update.effective_chat.id, message_id=loading_message_id)
+    if loading_message is not None:
+        loading_message.delete()
 
 
 if __name__ == '__main__':
