@@ -36,6 +36,7 @@ Installation depends on the system, in the end you need to make sure that `ffmpe
 ### MediaInfo
 
 Instructions are available [here](https://pymediainfo.readthedocs.io/en/stable/), but they weren't enough for me on MacOS
+
 You can download a library file (dll, dylib, etc... depending on the platform) from https://mediaarea.net/en/MediaInfo/Download and put it in the project's root folder
 
 
