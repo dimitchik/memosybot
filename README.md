@@ -42,7 +42,7 @@ You can download a library file (dll, dylib, etc... depending on the platform) f
 
 ### Python packages
 
-Python packages are listed in `requirements.txt`, to autoatically install them run `pip install -r requirements.txt`
+Python packages are listed in `requirements.txt`, to automatically install them run `pip install -r requirements.txt`
 
 
 ## Usage
