@@ -25,18 +25,18 @@ Link preview in Telegram ususally sucks for videos, and opening a separate websi
 
 ### Python 3
 
-[https://www.python.org]
+https://www.python.org
 
 ### FFmpeg
 
-[https://ffmpeg.org]
+https://ffmpeg.org
 
 Installation depends on the system, in the end you need to make sure that `ffmpeg` console command is available
 
 ### MediaInfo
 
-Instructions are available here [https://pymediainfo.readthedocs.io/en/stable/], but they weren't enough for me on MacOS
-You can download a library file (dll, dylib, etc... depending on the platform) from [https://mediaarea.net/en/MediaInfo/Download] and put it in the project's root folder
+Instructions are available [here](https://pymediainfo.readthedocs.io/en/stable/), but they weren't enough for me on MacOS
+You can download a library file (dll, dylib, etc... depending on the platform) from https://mediaarea.net/en/MediaInfo/Download and put it in the project's root folder
 
 
 ### Python packages
