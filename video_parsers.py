@@ -1,5 +1,5 @@
 
-from telegram import Update, Chat, ParseMode
+from telegram import Update, Chat, constants
 from telegram.ext import CallbackContext
 import requests
 import urllib.request
@@ -12,7 +12,7 @@ headers = {
     'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36'}
 
 
-def coub_parse(update: Update, context: CallbackContext, url: str):
+async def coub_parse(update: Update, context: CallbackContext, url: str):
     id = url.split('/')[-1]
     requestUrl = 'https://coub.com/api/v2/coubs/%s' % (id)
     response = requests.get(requestUrl, headers=headers)
@@ -37,7 +37,7 @@ def coub_parse(update: Update, context: CallbackContext, url: str):
         else:
             loop_audio(videoFile, audioFile, result)
         with open(result, 'rb') as file:
-            success_video(update, context, file.read(), url)
+            await success_video(update, context, file.read(), url)
 
 
 def ninegag_parse(update: Update, context: CallbackContext, url: str):
@@ -46,14 +46,14 @@ def ninegag_parse(update: Update, context: CallbackContext, url: str):
         id = id.split('?')[0]
     videoUrl = 'https://9gag.com/photo/%s_460sv.mp4' % (id)
     requests.get(videoUrl, headers=headers)
-    success_video(update, context, videoUrl, url)
+    return success_video(update, context, videoUrl, url)
 
 
 dart_path = os.path.join('.', 'yt_download', 'bin', 'yt_download.dart')
 clipDuration = '00:05:00'
 
 
-def youtube_parse(update: Update, context: CallbackContext, url: str, dur: str = '60', orig_url: str | None = None):
+def youtube_parse_old(update: Update, context: CallbackContext, url: str, dur: str = '60', orig_url: str | None = None):
     from pytube import YouTube
     if orig_url is None:
         orig_url = url
@@ -77,6 +77,41 @@ def youtube_parse(update: Update, context: CallbackContext, url: str, dur: str =
     with open(videoFile, 'rb') as file:
         success_video(update, context, file.read(), orig_url)
 
+final_filename = None
+
+def yt_dlp_monitor(d):
+    global final_filename
+    final_filename  = d.get('info_dict').get('_filename')
+
+def youtube_parse(update: Update, context: CallbackContext, url: str):
+    from yt_dlp import YoutubeDL
+    timestamp = int(url.split('t=')[1].split('&')[0])
+    if not timestamp:
+        timestamp = 0
+    ranges = lambda _, __ : [{'start_time': timestamp, 'end_time': timestamp+300}]
+    with YoutubeDL({
+        'outtmpl': {'default': '%(id)s.%(ext)s'},
+        'format': '(b[fps>30]/b)[height<=720][ext=mp4]/(w[fps>30][ext=mp4]/w[ext=mp4]/w)',
+        'merge_output_format': 'mp4',
+        'noplaylist': True,
+        'quiet': True,
+        'no_warnings': True,
+        'nocheckcertificate': True,
+        'ignoreerrors': True,
+        'prefer_ffmpeg': True,
+        "progress_hooks": [yt_dlp_monitor],
+        'max_filesize': 100000000,
+        'download_ranges': ranges
+    }) as ydl:
+        ydl.download([url])
+    global final_filename
+    if not os.path.exists(final_filename):
+        for root, dirs, files in os.walk('./'):
+            for file in files:
+                if final_filename.split('.')[0] in file and file.endswith('.mp4'):
+                    final_filename = file
+
+    return success_video(update, context, final_filename, url)
 
 def youtube_clip_parse(update: Update, context: CallbackContext, url: str):
     from bs4 import BeautifulSoup, Tag, NavigableString
@@ -109,7 +144,7 @@ def youtube_clip_parse(update: Update, context: CallbackContext, url: str):
     youtube_parse(update, context, video_url, dur, url)
 
 
-def tiktok_parse(update: Update, context: CallbackContext, url: str):
+async def tiktok_parse(update: Update, context: CallbackContext, url: str):
     import bs4
     ses = requests.Session()
     server_url = 'https://musicaldown.com/'
@@ -150,10 +185,10 @@ def tiktok_parse(update: Update, context: CallbackContext, url: str):
     videoFile = 'tiktok_%s.mp4' % url.split('/')[-1].split('?')[0]
     download_stream(download_link, videoFile)
     with open(videoFile, 'rb') as file:
-        success_video(update, context, file.read(), url)
+        await success_video(update, context, file.read(), url)
 
 
-def reddit_parse(update: Update, context: CallbackContext, url: str):
+async def reddit_parse(update: Update, context: CallbackContext, url: str):
     videoUrl: str
     if 'reddit.com' in url:
         lastslash = url.rfind('/')
@@ -170,30 +205,30 @@ def reddit_parse(update: Update, context: CallbackContext, url: str):
     videoFile = '%s.mp4' % url.split('/')[-1]
     download_stream(videoUrl, videoFile)
     with open(videoFile, 'rb') as file:
-        success_video(update, context, file.read(), url)
+        await success_video(update, context, file.read(), url)
 
 
-def success_video(update: Update, context: CallbackContext, video: str | bytes, url: str):
+async def success_video(update: Update, context: CallbackContext, video: str | bytes, url: str):
     if update.effective_chat is not None:
-        message = context.bot.send_video(
+        message = await context.bot.send_video(
             chat_id=update.effective_chat.id, video=video)
         if update.effective_chat.type != Chat.PRIVATE:
-            context.bot.edit_message_caption(
+            await context.bot.edit_message_caption(
                 chat_id=update.effective_chat.id, message_id=message.message_id,
                 caption='<a href="tg://user?id=%s">%s</a>\n%s' % (
                     update.message.from_user.id, update.message.from_user.full_name,
                     update.message.text
                 ),
-                parse_mode=ParseMode.HTML
+                parse_mode=constants.HTML
             )
             if update.message.parse_entity(update.message.entities[-1]) == url:
-                context.bot.delete_message(
+                await context.bot.delete_message(
                     chat_id=update.effective_chat.id, message_id=update.message.message_id
                 )
     else:
-        context.bot.send_message(
+        await context.bot.send_message(
             chat_id=settings.debug_chat_id, text="WTF: %s\n%s\n%s" % (url, update, context))
-        context.bot.send_video(
+        await context.bot.send_video(
             chat_id=settings.debug_chat_id, video=video, reply_to_message_id=update.message.message_id)
     if isinstance(video, str) and os.path.exists(video) and not video.startswith('http'):
         os.remove(video)

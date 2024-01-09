@@ -13,10 +13,7 @@ Link preview in Telegram ususally sucks for videos, and opening a separate websi
 - [9gag](https://9gag.com)
 - [coub](https://coub.com)
 - [youtube](https://youtube.com)
-  - Duration limit is 5 minutes, if the video is longer, it will be cut
-  - Timestamps are respected
-  - Shorts are supported (bot assumes they're vertical)
-  - There is some support for clips, but they are very inconsistent
+  - limited to 5 minutes, will be cut if it's longer
 - [reddit](https://reddit.com)
 - [tiktok](https://tiktok.com)
 
