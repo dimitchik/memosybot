@@ -83,7 +83,7 @@ async def try_function(function, *args, update: Update, context: CallbackContext
         )
     x = 0
     while x < 10:
-        print(x)
+        print("Attempt %s" % x)
         try:
             await function(*args)
         except BadRequest:

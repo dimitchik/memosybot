@@ -1,6 +1,6 @@
 
 from telegram import Update, Chat, constants
-from telegram.ext import CallbackContext
+from telegram.ext import CallbackContext, ContextTypes
 import requests
 import urllib.request
 import os
@@ -208,7 +208,7 @@ async def reddit_parse(update: Update, context: CallbackContext, url: str):
         await success_video(update, context, file.read(), url)
 
 
-async def success_video(update: Update, context: CallbackContext, video: str | bytes, url: str):
+async def success_video(update: Update, context: ContextTypes.DEFAULT_TYPE, video: str | bytes, url: str):
     if update.effective_chat is not None:
         message = await context.bot.send_video(
             chat_id=update.effective_chat.id, video=video)
@@ -219,12 +219,10 @@ async def success_video(update: Update, context: CallbackContext, video: str | b
                     update.message.from_user.id, update.message.from_user.full_name,
                     update.message.text
                 ),
-                parse_mode=constants.HTML
+                parse_mode='HTML'
             )
             if update.message.parse_entity(update.message.entities[-1]) == url:
-                await context.bot.delete_message(
-                    chat_id=update.effective_chat.id, message_id=update.message.message_id
-                )
+                await update.message.delete()
     else:
         await context.bot.send_message(
             chat_id=settings.debug_chat_id, text="WTF: %s\n%s\n%s" % (url, update, context))
