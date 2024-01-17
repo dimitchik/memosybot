@@ -90,7 +90,6 @@ async def try_function(function, *args, update: Update, context: CallbackContext
         pass
         # break
     except NetworkError:
-        x += 1
         print(sys.exc_info())
         # continue
     except:
