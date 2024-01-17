@@ -1,1 +1,2 @@
-screen -dmS bot python memosybot.py
+screen -X -S botupdater quit
+screen -dmS botupdater ./autoupdate.sh
