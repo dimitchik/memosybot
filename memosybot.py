@@ -53,8 +53,8 @@ async def url_parse(update: Update, context: CallbackContext):
             if 'reddit.com' in url or 'v.redd.it' in url:
                 await try_function(video_parsers.reddit_parse, update,
                              context, url, update=update, context=context)
-            if 'tiktok.com' in url:
-                await try_function(video_parsers.tiktok_parse, update,
+            else:
+                await try_function(video_parsers.youtube_parse, update,
                              context, url, update=update, context=context)
 
 
@@ -74,34 +74,36 @@ async def error_message(*args, update: Update | None = None, context: CallbackCo
 
 
 async def try_function(function, *args, update: Update, context: CallbackContext):
-    loading_message = None
-    if update.effective_chat is not None:
-        loading_message = await context.bot.send_sticker(
-            chat_id=update.effective_chat.id,
-            sticker='CAACAgIAAxkBAAIBzGOHjfCGEPoiv6G2LCxCLUHjemF8AAJBAQACzRswCPHwYhjf9pZYKwQ',
-            disable_notification=True,
-        )
-    x = 0
-    while x < 10:
-        print("Attempt %s" % x)
-        try:
-            await function(*args)
-        except BadRequest:
-            pass
-            break
-        except NetworkError:
-            x += 1
-            print(sys.exc_info())
-            continue
-        except:
-            await error_message(
-                *args, update=update, context=context)
-        break
-    else:
-        await error_message(
-            *args, update=update, context=context)
-    if loading_message is not None:
-        await loading_message.delete()
+    # loading_message = None
+    # if update.effective_chat is not None:
+    #     loading_message = await context.bot.send_sticker(
+    #         chat_id=update.effective_chat.id,
+    #         sticker='CAACAgIAAxkBAAIBzGOHjfCGEPoiv6G2LCxCLUHjemF8AAJBAQACzRswCPHwYhjf9pZYKwQ',
+    #         disable_notification=True,
+    #     )
+    # x = 0
+    # while x < 10:
+        # print("Attempt %s" % x)
+    try:
+        await function(*args)
+    except BadRequest:
+        pass
+        # break
+    except NetworkError:
+        x += 1
+        print(sys.exc_info())
+        # continue
+    except:
+        # break
+        pass
+        # await error_message(
+        #     *args, update=update, context=context)
+    # break
+    # else:
+    #     await error_message(
+    #         *args, update=update, context=context)
+    # if loading_message is not None:
+    #     await loading_message.delete()
 
 
 if __name__ == '__main__':
