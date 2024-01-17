@@ -37,20 +37,11 @@ async def url_parse(update: Update, context: CallbackContext):
                 await try_function(video_parsers.ninegag_parse, update, context, url,
                              update=update, context=context
                              )
-            if 'coub.com' in url or 'coub.ru' in url:
+            elif 'coub.com' in url or 'coub.ru' in url:
                 await try_function(video_parsers.coub_parse, update, context, url,
                              update=update, context=context
                              )
-            if 'youtu.be' in url or 'youtube.com' in url:
-                # if 'clip' in url:
-                #     try_function(video_parsers.youtube_clip_parse, update,
-                #                  context, url, update=update, context=context
-                #                  )
-                # else:
-                await try_function(video_parsers.youtube_parse, update, context, url,
-                                update=update, context=context
-                                )
-            if 'reddit.com' in url or 'v.redd.it' in url:
+            elif 'reddit.com' in url or 'v.redd.it' in url:
                 await try_function(video_parsers.reddit_parse, update,
                              context, url, update=update, context=context)
             else:
@@ -86,14 +77,9 @@ async def try_function(function, *args, update: Update, context: CallbackContext
         # print("Attempt %s" % x)
     try:
         await function(*args)
-    except BadRequest:
-        pass
-        # break
-    except NetworkError:
-        print(sys.exc_info())
-        # continue
     except:
         # break
+        print("Unexpected error:", sys.exc_info())
         pass
         # await error_message(
         #     *args, update=update, context=context)

@@ -85,11 +85,14 @@ def yt_dlp_monitor(d):
 
 def youtube_parse(update: Update, context: CallbackContext, url: str):
     from yt_dlp import YoutubeDL
-    if url.split('t=')[-1] == url:
+    import re
+    timestamp = re.search(r't=(\d+)', url)
+    if timestamp is None:
         timestamp = 0
     else:
-        timestamp = int(url.split('t=')[1].split('&')[0])
-    ranges = lambda _, __ : [{'start_time': timestamp, 'end_time': timestamp+300}]
+        timestamp = int(timestamp.group(1))
+    print('timestamp', timestamp)
+    ranges = lambda _,__: [{'start_time': timestamp, 'end_time': timestamp+300}]
     with YoutubeDL({
         'outtmpl': {'default': '%(id)s.%(ext)s'},
         'format': '(b[fps>30]/b)[height<=720][ext=mp4]/(w[fps>30][ext=mp4]/w[ext=mp4]/w)',
