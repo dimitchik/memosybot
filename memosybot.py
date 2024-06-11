@@ -74,6 +74,7 @@ async def try_function(function, *args):
     except:
         
         # break
+        print("Unexpected error:", sys.exc_info())
         pass
         await error_message(*args)
     # break
