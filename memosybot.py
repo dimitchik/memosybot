@@ -13,52 +13,30 @@ import queue
 here = path.dirname(path.realpath(__file__))
 sys.path.append(path.join(here, "./vendored"))
 
-# unused, and probably incorrect
-def webhook(event, _):
-    settings.init()
-    try:
-        bot = Bot(settings.token)
-        update = Update.de_json(json.loads(event['body']), bot)
-        context = CallbackContext(dispatcher=Dispatcher(bot, queue.Queue()))
-        if update is None:
-            return {"statusCode": 200}
-        url_parse(update, context)
-    except Exception as e:
-        print(e)
-        error_message(e)
-    return {"statusCode": 200}
-
-
-async def url_parse(update: Update, context: CallbackContext):
+async def url_parse(update: Update, bot: Bot):
+    if not update.message:
+        return
     if update.message.entities:
         for entity in update.message.entities:
             url = update.message.parse_entity(entity)
             if '9gag.com' in url and not url.endswith('.mp4'):
-                await try_function(video_parsers.ninegag_parse, update, context, url,
-                             update=update, context=context
-                             )
-            if 'coub.com' in url or 'coub.ru' in url:
-                await try_function(video_parsers.coub_parse, update, context, url,
-                             update=update, context=context
-                             )
-            if 'youtu.be' in url or 'youtube.com' in url:
+                await try_function(video_parsers.ninegag_parse, update, bot, url,)
+            elif 'coub.com' in url or 'coub.ru' in url:
+                await try_function(video_parsers.coub_parse, update, bot, url,)
+            elif 'youtu.be' in url or 'youtube.com' in url:
                 # if 'clip' in url:
                 #     try_function(video_parsers.youtube_clip_parse, update,
-                #                  context, url, update=update, context=context
+                #                  bot, url, update=update, bot=bot
                 #                  )
                 # else:
-                await try_function(video_parsers.youtube_parse, update, context, url,
-                                update=update, context=context
-                                )
-            if 'reddit.com' in url or 'v.redd.it' in url:
-                await try_function(video_parsers.reddit_parse, update,
-                             context, url, update=update, context=context)
+                await try_function(video_parsers.youtube_parse, update, bot, url)
+            # if 'reddit.com' in url or 'v.redd.it' in url:
+            #     await try_function(video_parsers.reddit_parse, update, bot, url)
             else:
-                await try_function(video_parsers.youtube_parse, update,
-                             context, url, update=update, context=context)
+                await try_function(video_parsers.youtube_parse, update, bot, url)
 
 
-async def error_message(*args, update: Update | None = None, context: CallbackContext | None = None):
+async def error_message(*args, update: Update | None = None):
     import traceback
     bot = Bot(settings.token)
     if update is not None and update.effective_chat is not None:
@@ -71,9 +49,10 @@ async def error_message(*args, update: Update | None = None, context: CallbackCo
     await bot.send_message(
         chat_id=settings.debug_chat_id,
         text="WTF: %s\n Additional info: %s" % (traceback.format_exc(), args))
+    logger.error("WTF: %s\n Additional info: %s" % (traceback.format_exc(), args))
 
 
-async def try_function(function, *args, update: Update, context: CallbackContext):
+async def try_function(function, *args):
     # loading_message = None
     # if update.effective_chat is not None:
     #     loading_message = await context.bot.send_sticker(
@@ -90,13 +69,13 @@ async def try_function(function, *args, update: Update, context: CallbackContext
         pass
         # break
     except NetworkError:
-        print(sys.exc_info())
+        pass
         # continue
     except:
+        
         # break
         pass
-        # await error_message(
-        #     *args, update=update, context=context)
+        await error_message(*args)
     # break
     # else:
     #     await error_message(
