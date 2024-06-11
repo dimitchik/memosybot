@@ -13,7 +13,8 @@ import queue
 here = path.dirname(path.realpath(__file__))
 sys.path.append(path.join(here, "./vendored"))
 
-async def url_parse(update: Update, bot: Bot):
+async def url_parse(update: Update, context: CallbackContext):
+    bot = context.bot
     if not update.message:
         return
     if update.message.entities:
@@ -32,6 +33,9 @@ async def url_parse(update: Update, bot: Bot):
                 await try_function(video_parsers.youtube_parse, update, bot, url)
             # if 'reddit.com' in url or 'v.redd.it' in url:
             #     await try_function(video_parsers.reddit_parse, update, bot, url)
+            if 'x.com' in url:
+                url = url.replace('x.com', 'twitter.com')
+                await try_function(video_parsers.youtube_parse, update, bot, url)
             else:
                 await try_function(video_parsers.youtube_parse, update, bot, url)
 
@@ -49,7 +53,6 @@ async def error_message(*args, update: Update | None = None):
     await bot.send_message(
         chat_id=settings.debug_chat_id,
         text="WTF: %s\n Additional info: %s" % (traceback.format_exc(), args))
-    logger.error("WTF: %s\n Additional info: %s" % (traceback.format_exc(), args))
 
 
 async def try_function(function, *args):
